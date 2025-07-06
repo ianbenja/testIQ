@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Question } from "../../types";
+import type { Question } from "../../types";
 
 interface MultipleChoiceProps {
   question: Question;

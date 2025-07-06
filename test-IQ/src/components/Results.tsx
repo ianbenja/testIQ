@@ -1,23 +1,27 @@
 import React from "react";
-import { Question, Answer } from "../types";
-import { CheckCircle, XCircle, Repeat } from "lucide-react";
+import type { Question, Answer } from "../types";
+import { Repeat } from "lucide-react"; // Eliminadas importaciones no usadas
+
+// El tipo para las respuestas que vienen de App.tsx
+interface AnswerResult {
+  userAnswer: Answer;
+  isCorrect: boolean;
+}
 
 interface ResultsProps {
   questions: Question[];
-  answers: Answer[];
+  answers: AnswerResult[]; // El tipo de 'answers' se ha actualizado
   onRestart: () => void;
 }
 
 const Results: React.FC<ResultsProps> = ({ questions, answers, onRestart }) => {
-  const correctAnswers = answers.filter((answer, index) => {
-    const question = questions[index];
-    if (Array.isArray(answer) && Array.isArray(question.answer)) {
-      return JSON.stringify(answer) === JSON.stringify(question.answer);
-    }
-    return answer === question.answer;
-  }).length;
+  // La lógica para contar respuestas correctas ahora es más simple
+  const correctAnswers = answers.filter((answer) => answer.isCorrect).length;
 
-  const score = Math.round((correctAnswers / questions.length) * 100);
+  const score =
+    questions.length > 0
+      ? Math.round((correctAnswers / questions.length) * 100)
+      : 0;
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-8 text-center transition-all duration-500">

@@ -1,11 +1,11 @@
-import { Question } from "../types";
+import type { Question, Answer } from "../types";
 import MultipleChoice from "./questionTypes/MultipleChoice";
 import TextInput from "./questionTypes/TextInput";
 import Ordering from "./questionTypes/Ordering";
 
 interface Props {
   question: Question;
-  onAnswer: (answer: string | string[]) => void;
+  onAnswer: (answer: Answer) => void;
 }
 
 function QuestionDisplay({ question, onAnswer }: Props) {
@@ -14,7 +14,14 @@ function QuestionDisplay({ question, onAnswer }: Props) {
       case "multipleChoice":
         return <MultipleChoice question={question} onAnswer={onAnswer} />;
       case "textInput":
-        return <TextInput question={question} onAnswer={onAnswer} />;
+        // Pasamos la prop 'isTimed' que faltaba. Asumimos 'false' por ahora.
+        return (
+          <TextInput
+            question={question}
+            onAnswer={(answer) => onAnswer(answer)}
+            isTimed={false}
+          />
+        );
       case "ordering":
         return <Ordering question={question} onAnswer={onAnswer} />;
       default:
@@ -28,7 +35,6 @@ function QuestionDisplay({ question, onAnswer }: Props) {
         {question.text}
       </h2>
 
-      {/* Renderiza la imagen si existe en el objeto de la pregunta */}
       {question.image && (
         <div className="my-4 flex justify-center">
           <img
@@ -37,7 +43,7 @@ function QuestionDisplay({ question, onAnswer }: Props) {
             className="rounded-lg max-w-sm w-full shadow-md border-4 border-gray-200 dark:border-gray-700"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.onerror = null; // Previene bucles infinitos
+              target.onerror = null;
               target.src =
                 "https://placehold.co/400x200/ef4444/ffffff?text=Error+al+cargar+imagen";
             }}

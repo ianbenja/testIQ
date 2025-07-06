@@ -1,16 +1,11 @@
 export interface Question {
   type: "multipleChoice" | "textInput" | "ordering";
+  category: string; // Añadida la propiedad category
   text: string;
-  image?: string; // URL de la imagen (opcional)
+  image?: string;
   options?: string[];
   correctAnswer: string | string[];
   points?: number;
 }
 
-export interface Answer {
-  questionText: string;
-  userAnswer: string | string[];
-  correctAnswer: string | string[];
-  isCorrect: boolean;
-  points: number;
-}
+export type Answer = string | string[];
