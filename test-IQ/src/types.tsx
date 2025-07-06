@@ -1,19 +1,16 @@
 export interface Question {
-  type: "multiple-choice" | "text-input" | "ordering";
+  type: "multipleChoice" | "textInput" | "ordering";
   text: string;
-  category:
-    | "Razonamiento Fluido"
-    | "Comprensión Verbal"
-    | "Memoria de Trabajo"
-    | "Procesamiento Visoespacial"
-    | "Conocimiento Cuantitativo";
+  image?: string; // URL de la imagen (opcional)
   options?: string[];
-  image?: string;
   correctAnswer: string | string[];
+  points?: number;
 }
 
 export interface Answer {
-  questionIndex: number;
-  answer: string | string[];
+  questionText: string;
+  userAnswer: string | string[];
+  correctAnswer: string | string[];
   isCorrect: boolean;
+  points: number;
 }

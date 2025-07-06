@@ -1,5 +1,6 @@
-import type { Question } from "./types"; // Importación de tipo corregida
+import { Question } from "./types";
 
+// Se ha cambiado la declaración para exportar la constante directamente.
 export const questions: Question[] = [
   // --- Razonamiento Fluido (Gf) ---
   {

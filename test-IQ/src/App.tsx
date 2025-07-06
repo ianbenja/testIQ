@@ -1,75 +1,71 @@
-import React, { useState } from "react";
-import type { Answer } from "./types"; // Importación de tipo corregida
+import { useState } from "react";
+import { questions } from "./questions";
 import Welcome from "./components/Welcome";
 import QuestionDisplay from "./components/QuestionDisplay";
 import Results from "./components/Results";
-import { questions } from "./questions";
+import ProgressBar from "./components/ProgressBar";
+import { Answer } from "./types";
 
-const App: React.FC = () => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<
-    number | null
-  >(null);
+export default function App() {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const [testFinished, setTestFinished] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
-  const startTest = () => {
+  const handleStart = () => {
     setCurrentQuestionIndex(0);
     setAnswers([]);
-    setTestFinished(false);
+    setShowResults(false);
   };
 
-  const handleAnswer = (answer: string | string[], isCorrect: boolean) => {
-    if (currentQuestionIndex === null) return;
-
-    const newAnswer: Answer = {
-      questionIndex: currentQuestionIndex,
-      answer,
-      isCorrect,
-    };
-    setAnswers([...answers, newAnswer]);
+  const handleAnswer = (answer: Answer) => {
+    const newAnswers = [...answers, answer];
+    setAnswers(newAnswers);
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      setTestFinished(true);
-      setCurrentQuestionIndex(null);
+      setShowResults(true);
     }
   };
 
-  const restartTest = () => {
-    setCurrentQuestionIndex(null);
+  const handleRestart = () => {
+    setCurrentQuestionIndex(-1);
     setAnswers([]);
-    setTestFinished(false);
+    setShowResults(false);
   };
 
-  const renderContent = () => {
-    if (testFinished) {
-      return (
-        <Results
-          answers={answers}
-          totalQuestions={questions.length}
-          onRestart={restartTest}
-        />
-      );
-    }
-    if (currentQuestionIndex !== null) {
-      return (
-        <QuestionDisplay
-          question={questions[currentQuestionIndex]}
-          onAnswer={handleAnswer}
-          currentIndex={currentQuestionIndex}
-          totalQuestions={questions.length}
-        />
-      );
-    }
-    return <Welcome onStart={startTest} />;
-  };
+  const isTestStarted = currentQuestionIndex > -1;
+  const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen font-sans flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl mx-auto">{renderContent()}</div>
-    </div>
-  );
-};
+    <main className="min-h-screen w-full flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-3xl mx-auto">
+        {isTestStarted && !showResults && (
+          <ProgressBar
+            current={currentQuestionIndex + 1}
+            total={questions.length}
+          />
+        )}
 
-export default App;
+        <div className="mt-5 transition-all duration-300">
+          {!isTestStarted && <Welcome onStart={handleStart} />}
+
+          {isTestStarted && !showResults && currentQuestion && (
+            <QuestionDisplay
+              question={currentQuestion}
+              onAnswer={handleAnswer}
+            />
+          )}
+
+          {showResults && (
+            <Results
+              answers={answers}
+              questions={questions}
+              onRestart={handleRestart}
+            />
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}

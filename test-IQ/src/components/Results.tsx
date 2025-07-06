@@ -1,114 +1,50 @@
 import React from "react";
-import type { Answer } from "../types"; // Importación de tipo corregida
+import { Question, Answer } from "../types";
+import { CheckCircle, XCircle, Repeat } from "lucide-react";
 
 interface ResultsProps {
+  questions: Question[];
   answers: Answer[];
-  totalQuestions: number;
   onRestart: () => void;
 }
 
-const Results: React.FC<ResultsProps> = ({
-  answers,
-  totalQuestions,
-  onRestart,
-}) => {
-  const correctAnswers = answers.filter((a) => a.isCorrect).length;
-  const scorePercentage = correctAnswers / totalQuestions;
-
-  const calculateIQ = (percentage: number): number => {
-    if (percentage < 0.5) {
-      return Math.round(70 + (percentage / 0.5) * 30);
-    } else {
-      return Math.round(100 + ((percentage - 0.5) / 0.5) * 30);
+const Results: React.FC<ResultsProps> = ({ questions, answers, onRestart }) => {
+  const correctAnswers = answers.filter((answer, index) => {
+    const question = questions[index];
+    if (Array.isArray(answer) && Array.isArray(question.answer)) {
+      return JSON.stringify(answer) === JSON.stringify(question.answer);
     }
-  };
+    return answer === question.answer;
+  }).length;
 
-  const iqScore = calculateIQ(scorePercentage);
-
-  const getClassification = (
-    iq: number
-  ): { classification: string; description: string } => {
-    if (iq >= 130)
-      return {
-        classification: "Muy Superior",
-        description:
-          "Tu rendimiento se encuentra en el 2% superior de la población.",
-      };
-    if (iq >= 120)
-      return {
-        classification: "Superior",
-        description:
-          "Demuestras una capacidad cognitiva notablemente por encima del promedio.",
-      };
-    if (iq >= 110)
-      return {
-        classification: "Promedio Alto",
-        description: "Tus habilidades cognitivas están por encima de la media.",
-      };
-    if (iq >= 90)
-      return {
-        classification: "Promedio",
-        description:
-          "Te encuentras dentro del rango de la mayoría de la población.",
-      };
-    if (iq >= 80)
-      return {
-        classification: "Promedio Bajo",
-        description:
-          "Tus habilidades cognitivas están ligeramente por debajo de la media.",
-      };
-    if (iq >= 70)
-      return {
-        classification: "Límite (Borderline)",
-        description:
-          "Tu rendimiento se encuentra en el extremo inferior del rango promedio.",
-      };
-    return {
-      classification: "Extremadamente Bajo",
-      description:
-        "Sería recomendable una evaluación más profunda por un profesional.",
-    };
-  };
-
-  const { classification, description } = getClassification(iqScore);
+  const score = Math.round((correctAnswers / questions.length) * 100);
 
   return (
-    <div className="bg-gray-800 p-8 rounded-lg shadow-2xl text-center animate-fade-in">
-      <h2 className="text-3xl font-bold text-cyan-400 mb-4">
-        Resultados del Test
+    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-8 text-center transition-all duration-500">
+      <h2 className="text-4xl font-bold text-gray-800 mb-2">
+        ¡Test Completado!
       </h2>
-      <p className="text-gray-300 mb-2 text-lg">
-        Has respondido correctamente {correctAnswers} de {totalQuestions}{" "}
-        preguntas.
-      </p>
+      <p className="text-gray-600 mb-6">Estos son tus resultados.</p>
 
       <div className="my-8">
-        <p className="text-gray-400 text-xl">
-          Tu puntuación de CI estimada es:
-        </p>
-        <p className="text-7xl font-bold text-yellow-400 my-4">{iqScore}</p>
-        <p className="text-2xl font-semibold text-cyan-400">{classification}</p>
-        <p className="text-gray-300 mt-2 max-w-md mx-auto">{description}</p>
-      </div>
-
-      <div className="text-left bg-gray-900 p-4 rounded-lg mt-8">
-        <h4 className="font-bold text-lg mb-2 text-gray-200">
-          Aclaración Importante:
-        </h4>
-        <p className="text-sm text-gray-400">
-          Este test es una simulación educativa y de entretenimiento basada en
-          los principios de la psicometría. La puntuación de CI es una
-          estimación y no reemplaza una evaluación clínica realizada por un
-          psicólogo profesional. Un test real requiere una estandarización y
-          baremación rigurosa con una muestra poblacional representativa.
-        </p>
+        <div
+          className={`text-7xl font-bold ${
+            score >= 70 ? "text-green-500" : "text-amber-500"
+          }`}
+        >
+          {score}%
+        </div>
+        <div className="text-xl text-gray-700 mt-2">
+          ({correctAnswers} de {questions.length} respuestas correctas)
+        </div>
       </div>
 
       <button
         onClick={onRestart}
-        className="mt-8 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg text-xl transition-transform transform hover:scale-105 shadow-lg"
+        className="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transform hover:-translate-y-1 transition-all duration-300 ease-in-out inline-flex items-center"
       >
-        Realizar el Test de Nuevo
+        <Repeat className="mr-2 h-5 w-5" />
+        Volver a Intentar
       </button>
     </div>
   );
