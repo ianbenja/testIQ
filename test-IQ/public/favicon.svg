@@ -1,0 +1,7 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo del ícono -->
+  <rect width="64" height="64" rx="12" fill="#F3E8FF"/>
+  
+  <!-- Ícono del cerebro (color primario) -->
+  <path d="M32 16C24.268 16 18 22.268 18 30C18 35.523 21.523 40.268 26.5 42.45V48H22V52H42V48H37.5V42.45C42.477 40.268 46 35.523 46 30C46 22.268 39.732 16 32 16ZM32 20C37.523 20 42 24.477 42 30C42 33.037 40.446 35.684 38.25 37.375V34H35V31H38V28H35V25H32V28H29V31H26V34H29V37.375C23.554 35.684 22 33.037 22 30C22 24.477 26.477 20 32 20Z" fill="#5B21B6"/>
+</svg>

@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { questions as allQuestions } from "./questions";
 import type { AnswerResult, AnyQuestion } from "./types";
 import Welcome from "./components/Welcome";
