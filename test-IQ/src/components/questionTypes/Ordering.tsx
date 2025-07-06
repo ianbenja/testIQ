@@ -1,74 +1,105 @@
+// src/components/questionTypes/Ordering.tsx
 import React, { useState } from "react";
-import type { Question } from "../../types"; // Importación de tipo corregida
+import { OrderingQuestion } from "../../types";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-interface OrderingProps {
-  question: Question;
-  onAnswer: (answer: string[], isCorrect: boolean) => void;
+// Componente interno para cada elemento que se puede arrastrar
+function SortableItem(props: { id: string }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : "auto", // Asegura que el elemento arrastrado esté por encima de los demás
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`p-4 rounded-lg text-lg text-center cursor-grab transition-shadow
+        ${
+          isDragging
+            ? "bg-blue-100 border-blue-400 shadow-xl"
+            : "bg-white border border-gray-300"
+        }`}
+    >
+      {props.id}
+    </div>
+  );
 }
 
-const Ordering: React.FC<OrderingProps> = ({ question, onAnswer }) => {
-  const [items, setItems] = useState(question.options || []);
-  const [selected, setSelected] = useState<string[]>([]);
+// Componente principal de la pregunta de ordenamiento
+const Ordering: React.FC<{
+  question: OrderingQuestion;
+  onAnswer: (answer: string[]) => void;
+}> = ({ question, onAnswer }) => {
+  const [items, setItems] = useState(question.items);
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-  const handleSelect = (item: string) => {
-    setItems(items.filter((i) => i !== item));
-    setSelected([...selected, item]);
-  };
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-  const handleUndo = () => {
-    if (selected.length === 0) return;
-    const lastItem = selected[selected.length - 1];
-    setSelected(selected.slice(0, -1));
-    setItems([...items, lastItem]);
-  };
-
-  const handleSubmit = () => {
-    if (selected.length !== question.options?.length) return;
-    const isCorrect =
-      JSON.stringify(selected) === JSON.stringify(question.correctAnswer);
-    onAnswer(selected, isCorrect);
+    if (over && active.id !== over.id) {
+      setItems((currentItems) => {
+        const oldIndex = currentItems.findIndex((item) => item === active.id);
+        const newIndex = currentItems.findIndex((item) => item === over.id);
+        return arrayMove(currentItems, oldIndex, newIndex);
+      });
+    }
   };
 
   return (
     <div>
-      <div className="bg-gray-900 p-4 rounded-lg min-h-[60px] mb-4 border-2 border-gray-700 flex items-center gap-2 flex-wrap">
-        {selected.map((item) => (
-          <span
-            key={item}
-            className="bg-cyan-500 text-white font-bold py-2 px-4 rounded-md"
-          >
-            {item}
-          </span>
-        ))}
-      </div>
-
-      <div className="flex gap-2 mb-6 flex-wrap">
-        {items.map((item) => (
-          <button
-            key={item}
-            onClick={() => handleSelect(item)}
-            className="bg-gray-700 p-3 rounded-lg text-lg hover:bg-cyan-700"
-          >
-            {item}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex gap-4">
-        <button
-          onClick={handleUndo}
-          className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg text-lg"
-        >
-          Deshacer
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={selected.length !== question.options?.length}
-          className="flex-grow bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg text-lg disabled:bg-gray-500 disabled:cursor-not-allowed"
-        >
-          Confirmar Orden
-        </button>
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={items} strategy={verticalListSortingStrategy}>
+          <div className="space-y-3 mb-6">
+            {items.map((item) => (
+              <SortableItem key={item} id={item} />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+      <button
+        onClick={() => onAnswer(items)}
+        className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+      >
+        Confirmar Orden
+      </button>
     </div>
   );
 };

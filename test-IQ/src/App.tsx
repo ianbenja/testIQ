@@ -1,84 +1,111 @@
-import { useState } from "react";
-import { questions } from "./questions";
+// src/App.tsx
+import { useState, useEffect } from "react";
+import { questions as allQuestions } from "./questions";
+import { AnswerResult, AnyQuestion } from "./types";
 import Welcome from "./components/Welcome";
 import QuestionDisplay from "./components/QuestionDisplay";
 import Results from "./components/Results";
 import ProgressBar from "./components/ProgressBar";
-import type { Answer } from "./types";
 
-// Creamos un nuevo tipo para almacenar el resultado de cada respuesta
-interface AnswerResult {
-  userAnswer: Answer;
-  isCorrect: boolean;
-}
+// Hacemos una copia para poder mezclarla sin afectar al array original
+const questions = [...allQuestions];
 
 export default function App() {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
-  // El estado de las respuestas ahora guarda objetos con más detalle
+  const [gameState, setGameState] = useState<"welcome" | "playing" | "results">(
+    "welcome"
+  );
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<AnswerResult[]>([]);
-  const [showResults, setShowResults] = useState(false);
+
+  // Mezclamos las preguntas solo una vez, cuando el componente se monta
+  useEffect(() => {
+    questions.sort(() => Math.random() - 0.5);
+  }, []);
 
   const handleStart = () => {
-    setCurrentQuestionIndex(0);
     setAnswers([]);
-    setShowResults(false);
+    setCurrentQuestionIndex(0);
+    setGameState("playing");
   };
 
-  // La función handleAnswer ahora construye el objeto de respuesta completo
-  const handleAnswer = (userAnswer: Answer) => {
-    const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect =
-      JSON.stringify(userAnswer) ===
-      JSON.stringify(currentQuestion.correctAnswer);
+  const handleAnswer = (userAnswer: string | string[]) => {
+    const question = questions[currentQuestionIndex];
+    let isCorrect = false;
 
-    const newAnswers = [...answers, { userAnswer, isCorrect }];
-    setAnswers(newAnswers);
+    // Comparamos las respuestas de forma segura
+    if (Array.isArray(userAnswer) && Array.isArray(question.answer)) {
+      isCorrect =
+        JSON.stringify(userAnswer) === JSON.stringify(question.answer);
+    } else if (
+      typeof userAnswer === "string" &&
+      typeof question.answer === "string"
+    ) {
+      isCorrect = userAnswer.toUpperCase() === question.answer.toUpperCase();
+    }
 
+    // Guardamos un resultado más detallado
+    setAnswers([
+      ...answers,
+      {
+        questionId: question.id,
+        isCorrect: isCorrect,
+        difficulty: question.difficulty,
+        category: question.category,
+      },
+    ]);
+
+    // Avanzamos a la siguiente pregunta o a los resultados
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      setShowResults(true);
+      setGameState("results");
     }
   };
 
   const handleRestart = () => {
-    setCurrentQuestionIndex(-1);
-    setAnswers([]);
-    setShowResults(false);
+    // Volvemos a mezclar las preguntas para el siguiente intento
+    questions.sort(() => Math.random() - 0.5);
+    setGameState("welcome");
   };
 
-  const isTestStarted = currentQuestionIndex > -1;
-  const currentQuestion = questions[currentQuestionIndex];
-
-  return (
-    <main className="min-h-screen w-full flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-3xl mx-auto">
-        {isTestStarted && !showResults && (
-          <ProgressBar
-            current={currentQuestionIndex + 1}
-            total={questions.length}
-          />
-        )}
-
-        <div className="mt-5 transition-all duration-300">
-          {!isTestStarted && <Welcome onStart={handleStart} />}
-
-          {isTestStarted && !showResults && currentQuestion && (
+  const renderContent = () => {
+    switch (gameState) {
+      case "playing":
+        return (
+          <>
+            <ProgressBar
+              current={currentQuestionIndex}
+              total={questions.length}
+            />
+            <p className="text-center text-gray-500 mb-4">
+              Pregunta {currentQuestionIndex + 1} de {questions.length}
+            </p>
             <QuestionDisplay
-              question={currentQuestion}
+              question={questions[currentQuestionIndex]}
               onAnswer={handleAnswer}
             />
-          )}
+          </>
+        );
+      case "results":
+        // Pasamos el array original de preguntas para los cálculos
+        return (
+          <Results
+            answers={answers}
+            allQuestions={allQuestions}
+            onRestart={handleRestart}
+          />
+        );
+      case "welcome":
+      default:
+        return <Welcome onStart={handleStart} />;
+    }
+  };
 
-          {showResults && (
-            <Results
-              answers={answers}
-              questions={questions}
-              onRestart={handleRestart}
-            />
-          )}
-        </div>
-      </div>
-    </main>
+  return (
+    <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4 font-sans">
+      <main className="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-10">
+        {renderContent()}
+      </main>
+    </div>
   );
 }

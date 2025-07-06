@@ -1,52 +1,60 @@
-import React, { useState } from "react";
-import type { Question } from "../../types";
+// src/components/QuestionDisplay.tsx
+import React, { useEffect, useState } from "react";
+import {
+  AnyQuestion,
+  MultipleChoiceQuestion,
+  OrderingQuestion,
+} from "../types";
+import MultipleChoice from "./questionTypes/MultipleChoice";
+import TextInput from "./questionTypes/TextInput";
+import Ordering from "./questionTypes/Ordering";
 
-interface MultipleChoiceProps {
-  question: Question;
-  onAnswer: (answer: string) => void;
+interface Props {
+  question: AnyQuestion;
+  onAnswer: (answer: string | string[]) => void;
 }
 
-const MultipleChoice: React.FC<MultipleChoiceProps> = ({
-  question,
-  onAnswer,
-}) => {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+const QuestionDisplay: React.FC<Props> = ({ question, onAnswer }) => {
+  // Se añade una 'key' para forzar que el componente se vuelva a montar cuando
+  // la pregunta cambia, asegurando que el estado interno se reinicie.
+  const [key, setKey] = useState(question.id);
+  useEffect(() => {
+    setKey(question.id);
+  }, [question]);
 
-  const handleSelect = (option: string) => {
-    setSelectedOption(option);
-    // Añadimos un pequeño retraso para que el usuario vea la selección antes de pasar a la siguiente pregunta
-    setTimeout(() => {
-      onAnswer(option);
-      setSelectedOption(null); // Resetea para la siguiente pregunta
-    }, 300);
+  const renderQuestion = () => {
+    // Se actualiza el switch para que coincida con los nuevos tipos de pregunta (ej: 'multiple-choice')
+    switch (question.type) {
+      case "multiple-choice":
+        return (
+          <MultipleChoice
+            question={question as MultipleChoiceQuestion}
+            onAnswer={onAnswer}
+          />
+        );
+      case "text-input":
+        return <TextInput onAnswer={onAnswer} />;
+      case "ordering":
+        return (
+          <Ordering
+            question={question as OrderingQuestion}
+            onAnswer={onAnswer}
+          />
+        );
+      default:
+        // Este es el error que estabas viendo.
+        return <p>Error: Tipo de pregunta no reconocido.</p>;
+    }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {question.options?.map((option) => {
-        const isSelected = selectedOption === option;
-        return (
-          <button
-            key={option}
-            onClick={() => handleSelect(option)}
-            disabled={!!selectedOption}
-            className={`
-              w-full p-4 rounded-lg border-2 text-left text-lg font-medium
-              transition-all duration-200 ease-in-out transform
-              ${
-                isSelected
-                  ? "bg-indigo-600 border-indigo-700 text-white shadow-lg scale-105"
-                  : "bg-white border-gray-300 text-gray-700 hover:bg-indigo-50 hover:border-indigo-400"
-              }
-              ${!!selectedOption && !isSelected ? "opacity-50" : ""}
-            `}
-          >
-            {option}
-          </button>
-        );
-      })}
+    <div key={key} className="animate-fade-in">
+      <h2 className="text-2xl md:text-3xl font-semibold text-gray-700 mb-6 text-center">
+        {question.text}
+      </h2>
+      {renderQuestion()}
     </div>
   );
 };
 
-export default MultipleChoice;
+export default QuestionDisplay;
