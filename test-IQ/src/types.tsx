@@ -12,19 +12,22 @@ export interface AnswerResult {
   category: string;
 }
 
-// --- Definiciones para los diferentes tipos de preguntas ---
-
 export type QuestionType = "multiple-choice" | "text-input" | "ordering";
 
 /**
  * Interfaz base que contiene las propiedades comunes a todas las preguntas.
+ * Se añaden propiedades opcionales para las preguntas de memorización.
  */
 export interface BaseQuestion {
   id: number;
   type: QuestionType;
   category: string;
-  text: string;
+  text: string; // La instrucción para el usuario (ej: "Escribe en orden inverso")
   difficulty: number;
+  image?: string;
+  // --- Propiedades para preguntas de memoria ---
+  stimulus?: string; // El contenido a mostrar durante la memorización (ej: "8 - 4 - 9 - 2 - 7")
+  memorizationTime?: number; // Tiempo en segundos para memorizar
 }
 
 /**
@@ -34,7 +37,6 @@ export interface MultipleChoiceQuestion extends BaseQuestion {
   type: "multiple-choice";
   options: string[];
   answer: string;
-  image?: string;
 }
 
 /**
@@ -56,7 +58,6 @@ export interface OrderingQuestion extends BaseQuestion {
 
 /**
  * Un tipo de unión que puede representar cualquier tipo de pregunta en la aplicación.
- * Esto nos da flexibilidad y seguridad de tipos.
  */
 export type AnyQuestion =
   | MultipleChoiceQuestion

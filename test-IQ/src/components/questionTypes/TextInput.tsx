@@ -1,50 +1,38 @@
+// src/components/questionTypes/TextInput.tsx
 import React, { useState } from "react";
-import type { Question } from "../../types"; // Importación de tipo corregida
 
 interface TextInputProps {
-  question: Question;
-  onAnswer: (answer: string, isCorrect: boolean) => void;
-  isTimed: boolean;
+  onAnswer: (answer: string) => void;
 }
 
-const TextInput: React.FC<TextInputProps> = ({
-  question,
-  onAnswer,
-  isTimed,
-}) => {
+const TextInput: React.FC<TextInputProps> = ({ onAnswer }) => {
+  // El estado del valor del input es local y se inicializa vacío.
   const [value, setValue] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (value.trim() === "") return;
-    onAnswer(
-      value,
-      value.trim().toLowerCase() ===
-        String(question.correctAnswer).toLowerCase()
-    );
+    onAnswer(value.trim());
+    // Aunque el componente se reiniciará, es una buena práctica limpiar el estado.
+    setValue("");
   };
 
-  if (isTimed) {
-    return (
-      <div className="text-center text-gray-400">
-        <p>El tiempo ha terminado. Ahora, intenta recordar.</p>
-      </div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col sm:flex-row gap-4 w-full max-w-lg mx-auto"
+    >
       <input
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="flex-grow bg-gray-900 border-2 border-gray-600 rounded-lg p-4 text-lg focus:border-cyan-500 focus:outline-none"
+        className="flex-grow bg-white border-2 border-gray-300 rounded-lg p-4 text-lg text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
         placeholder="Escribe tu respuesta aquí..."
         autoFocus
       />
       <button
         type="submit"
-        className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition-transform transform hover:scale-105"
+        className="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transform hover:-translate-y-0.5 transition-all duration-200 ease-in-out"
       >
         Enviar
       </button>

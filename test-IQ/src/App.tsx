@@ -6,44 +6,67 @@ import Welcome from "./components/Welcome";
 import QuestionDisplay from "./components/QuestionDisplay";
 import Results from "./components/Results";
 import ProgressBar from "./components/ProgressBar";
+import { Clock } from "lucide-react";
 
-// Hacemos una copia para poder mezclarla sin afectar al array original
-const questions = [...allQuestions];
+const TOTAL_QUESTIONS = 20;
+
+/**
+ * Selecciona un subconjunto de preguntas de forma aleatoria y balanceada.
+ * @param allQuestions - El banco completo de preguntas.
+ * @returns Un array de 20 preguntas seleccionadas.
+ */
+const selectQuestions = (allQuestions: AnyQuestion[]): AnyQuestion[] => {
+  const easy = allQuestions.filter((q) => q.difficulty <= 4);
+  const medium = allQuestions.filter(
+    (q) => q.difficulty >= 5 && q.difficulty <= 7
+  );
+  const hard = allQuestions.filter((q) => q.difficulty >= 8);
+
+  const shuffle = (arr: AnyQuestion[]) => arr.sort(() => 0.5 - Math.random());
+
+  const selectedEasy = shuffle(easy).slice(0, 6); // 6 preguntas fáciles
+  const selectedMedium = shuffle(medium).slice(0, 8); // 8 preguntas medias
+  const selectedHard = shuffle(hard).slice(0, 6); // 6 preguntas difíciles
+
+  return shuffle([...selectedEasy, ...selectedMedium, ...selectedHard]);
+};
 
 export default function App() {
   const [gameState, setGameState] = useState<"welcome" | "playing" | "results">(
     "welcome"
   );
+  const [testQuestions, setTestQuestions] = useState<AnyQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<AnswerResult[]>([]);
-
-  // Mezclamos las preguntas solo una vez, cuando el componente se monta
-  useEffect(() => {
-    questions.sort(() => Math.random() - 0.5);
-  }, []);
+  const [startTime, setStartTime] = useState<number>(0);
+  const [totalTime, setTotalTime] = useState<number>(0);
 
   const handleStart = () => {
+    const selected = selectQuestions(allQuestions);
+    setTestQuestions(selected);
     setAnswers([]);
     setCurrentQuestionIndex(0);
+    setStartTime(Date.now());
+    setTotalTime(0);
     setGameState("playing");
   };
 
   const handleAnswer = (userAnswer: string | string[]) => {
-    const question = questions[currentQuestionIndex];
+    const question = testQuestions[currentQuestionIndex];
     let isCorrect = false;
 
-    // Comparamos las respuestas de forma segura
     if (Array.isArray(userAnswer) && Array.isArray(question.answer)) {
       isCorrect =
-        JSON.stringify(userAnswer) === JSON.stringify(question.answer);
+        JSON.stringify(userAnswer.sort()) ===
+        JSON.stringify(question.answer.sort());
     } else if (
       typeof userAnswer === "string" &&
       typeof question.answer === "string"
     ) {
-      isCorrect = userAnswer.toUpperCase() === question.answer.toUpperCase();
+      isCorrect =
+        userAnswer.trim().toLowerCase() === question.answer.toLowerCase();
     }
 
-    // Guardamos un resultado más detallado
     setAnswers([
       ...answers,
       {
@@ -54,17 +77,15 @@ export default function App() {
       },
     ]);
 
-    // Avanzamos a la siguiente pregunta o a los resultados
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < testQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
+      setTotalTime(Date.now() - startTime);
       setGameState("results");
     }
   };
 
   const handleRestart = () => {
-    // Volvemos a mezclar las preguntas para el siguiente intento
-    questions.sort(() => Math.random() - 0.5);
     setGameState("welcome");
   };
 
@@ -75,29 +96,29 @@ export default function App() {
           <>
             <ProgressBar
               current={currentQuestionIndex}
-              total={questions.length}
+              total={testQuestions.length}
+              startTime={startTime}
             />
-            <p className="text-center text-gray-500 mb-4">
-              Pregunta {currentQuestionIndex + 1} de {questions.length}
-            </p>
             <QuestionDisplay
-              question={questions[currentQuestionIndex]}
+              question={testQuestions[currentQuestionIndex]}
               onAnswer={handleAnswer}
             />
           </>
         );
       case "results":
-        // Pasamos el array original de preguntas para los cálculos
         return (
           <Results
             answers={answers}
-            allQuestions={allQuestions}
+            allQuestions={testQuestions}
             onRestart={handleRestart}
+            totalTime={totalTime}
           />
         );
       case "welcome":
       default:
-        return <Welcome onStart={handleStart} />;
+        return (
+          <Welcome onStart={handleStart} totalQuestions={TOTAL_QUESTIONS} />
+        );
     }
   };
 

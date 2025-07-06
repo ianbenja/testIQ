@@ -1,11 +1,16 @@
 // src/components/QuestionDisplay.tsx
 import React, { useEffect, useState } from "react";
-// Se corrige la ruta de importación para los tipos, asumiendo que está dos niveles arriba.
 import {
   AnyQuestion,
   MultipleChoiceQuestion,
   OrderingQuestion,
 } from "../types";
+import { Timer } from "lucide-react";
+
+// Importaciones de los componentes de cada tipo de pregunta
+import MultipleChoice from "./questionTypes/MultipleChoice";
+import TextInput from "./questionTypes/TextInput";
+import Ordering from "./questionTypes/Ordering";
 
 interface Props {
   question: AnyQuestion;
@@ -13,15 +18,62 @@ interface Props {
 }
 
 const QuestionDisplay: React.FC<Props> = ({ question, onAnswer }) => {
-  // Esta 'key' fuerza al componente a reiniciarse cuando cambia la pregunta,
-  // lo que evita que se muestren estados de preguntas anteriores.
-  const [key, setKey] = useState(question.id);
+  // Estado para controlar la fase de la pregunta: 'memorizing' o 'answering'
+  const [phase, setPhase] = useState<"memorizing" | "answering">("answering");
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  // Efecto que se ejecuta cuando cambia la pregunta
   useEffect(() => {
-    setKey(question.id);
+    // Si la pregunta tiene tiempo de memorización, iniciamos esa fase
+    if (question.memorizationTime && question.stimulus) {
+      setPhase("memorizing");
+      setTimeLeft(question.memorizationTime);
+    } else {
+      // Si no, vamos directamente a la fase de respuesta
+      setPhase("answering");
+      setTimeLeft(0);
+    }
   }, [question]);
 
+  // Efecto para manejar la cuenta regresiva del temporizador
+  useEffect(() => {
+    if (phase === "memorizing" && timeLeft > 0) {
+      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timerId);
+    }
+    // Cuando el tiempo llega a 0, cambiamos a la fase de respuesta
+    if (phase === "memorizing" && timeLeft === 0) {
+      setPhase("answering");
+    }
+  }, [phase, timeLeft]);
+
+  // --- Renderizado de la fase de memorización ---
+  if (phase === "memorizing") {
+    const progress = (timeLeft / (question.memorizationTime || 1)) * 100;
+    return (
+      <div className="text-center p-6 bg-gray-50 rounded-lg animate-fade-in">
+        <h3 className="text-xl font-semibold text-gray-700 mb-4">¡Memoriza!</h3>
+        <div className="bg-white p-8 rounded-lg shadow-inner mb-6">
+          <p className="text-3xl font-bold text-indigo-600 tracking-wider">
+            {question.stimulus}
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-2 text-lg text-gray-600">
+          <Timer className="h-6 w-6" />
+          <span>Tiempo restante: {timeLeft}s</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+          <div
+            className="bg-indigo-500 h-2.5 rounded-full transition-all duration-1000 linear"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Renderizado de la fase de respuesta ---
   const renderQuestion = () => {
-    // Usamos los tipos de pregunta con guion, como están definidos en los datos
     switch (question.type) {
       case "multiple-choice":
         return (
@@ -31,7 +83,6 @@ const QuestionDisplay: React.FC<Props> = ({ question, onAnswer }) => {
           />
         );
       case "text-input":
-        // Ya no necesitamos 'isTimed' ni pasar 'question' a TextInput
         return <TextInput onAnswer={onAnswer} />;
       case "ordering":
         return (
@@ -46,13 +97,12 @@ const QuestionDisplay: React.FC<Props> = ({ question, onAnswer }) => {
   };
 
   return (
-    <div key={key} className="animate-fade-in">
-      <h2 className="text-2xl md:text-3xl font-semibold text-gray-700 mb-6 text-center">
+    <div className="animate-fade-in">
+      <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-6 text-center">
         {question.text}
       </h2>
 
-      {/* Lógica para mostrar imagen si existe en la pregunta */}
-      {"image" in question && question.image && (
+      {question.image && (
         <div className="my-4 flex justify-center">
           <img
             src={question.image}
