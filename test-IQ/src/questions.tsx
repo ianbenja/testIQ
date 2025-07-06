@@ -1,5 +1,5 @@
 // src/questions.tsx
-import { AnyQuestion } from "./types";
+import type { AnyQuestion } from "./types";
 
 export const questions: AnyQuestion[] = [
   // --- PREGUNTAS ORIGINALES (13) ---

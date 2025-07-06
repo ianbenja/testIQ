@@ -1,6 +1,6 @@
 // src/components/questionTypes/Ordering.tsx
 import React, { useState } from "react";
-import { OrderingQuestion } from "../../types";
+import type { OrderingQuestion } from "../../types";
 import {
   DndContext,
   closestCenter,
@@ -8,7 +8,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
+  // Se añade la palabra clave 'type' para una importación de solo tipo.
+  type DragEndEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,

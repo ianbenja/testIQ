@@ -1,6 +1,6 @@
 // src/components/questionTypes/MultipleChoice.tsx
 import React from "react";
-import { MultipleChoiceQuestion } from "../../types";
+import type { MultipleChoiceQuestion } from "../../types";
 
 interface Props {
   question: MultipleChoiceQuestion;

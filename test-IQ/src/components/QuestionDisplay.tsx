@@ -1,6 +1,6 @@
 // src/components/QuestionDisplay.tsx
 import React, { useEffect, useState } from "react";
-import {
+import type {
   AnyQuestion,
   MultipleChoiceQuestion,
   OrderingQuestion,

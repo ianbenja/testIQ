@@ -1,11 +1,14 @@
+// src/components/Welcome.tsx
 import React from "react";
 import { BrainCircuit } from "lucide-react";
 
+// Se añade la nueva propiedad 'totalQuestions' a la interfaz.
 interface WelcomeProps {
   onStart: () => void;
+  totalQuestions: number;
 }
 
-const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
+const Welcome: React.FC<WelcomeProps> = ({ onStart, totalQuestions }) => {
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-8 text-center transition-all duration-500 hover:shadow-2xl">
       <div className="flex justify-center items-center mb-6">
@@ -16,8 +19,9 @@ const Welcome: React.FC<WelcomeProps> = ({ onStart }) => {
       </h1>
       <p className="text-gray-600 max-w-xl mx-auto mb-8">
         Pon a prueba tu agilidad mental, razonamiento lógico y habilidades para
-        resolver problemas. Este test está diseñado para ser desafiante y
-        divertido. ¡Mucha suerte!
+        resolver problemas. Este test consta de{" "}
+        <strong>{totalQuestions} preguntas</strong> seleccionadas al azar.
+        ¡Mucha suerte!
       </p>
       <button
         onClick={onStart}

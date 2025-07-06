@@ -1,6 +1,6 @@
 // src/components/Results.tsx
 import React from "react";
-import { AnswerResult, AnyQuestion } from "../types";
+import type { AnswerResult, AnyQuestion } from "../types";
 import { Repeat, Clock } from "lucide-react";
 
 /**

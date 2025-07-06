@@ -1,12 +1,11 @@
 // src/App.tsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { questions as allQuestions } from "./questions";
-import { AnswerResult, AnyQuestion } from "./types";
+import type { AnswerResult, AnyQuestion } from "./types";
 import Welcome from "./components/Welcome";
 import QuestionDisplay from "./components/QuestionDisplay";
 import Results from "./components/Results";
 import ProgressBar from "./components/ProgressBar";
-import { Clock } from "lucide-react";
 
 const TOTAL_QUESTIONS = 20;
 
