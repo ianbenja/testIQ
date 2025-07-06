@@ -8,7 +8,6 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  // Se añade la palabra clave 'type' para una importación de solo tipo.
   type DragEndEvent,
 } from "@dnd-kit/core";
 import {
@@ -19,8 +18,8 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
 
-// Componente interno para cada elemento que se puede arrastrar
 function SortableItem(props: { id: string }) {
   const {
     attributes,
@@ -34,28 +33,28 @@ function SortableItem(props: { id: string }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 10 : "auto", // Asegura que el elemento arrastrado esté por encima de los demás
+    zIndex: isDragging ? 10 : "auto",
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className={`p-4 rounded-lg text-lg text-center cursor-grab transition-shadow
+      className={`flex items-center justify-between p-4 rounded-lg text-lg transition-shadow
         ${
           isDragging
-            ? "bg-blue-100 border-blue-400 shadow-xl"
-            : "bg-white border border-gray-300"
+            ? "bg-primary-light border-primary shadow-xl text-white"
+            : "bg-surface border border-gray-300 text-textPrimary"
         }`}
     >
-      {props.id}
+      <span>{props.id}</span>
+      <button {...attributes} {...listeners} className="cursor-grab p-2">
+        <GripVertical />
+      </button>
     </div>
   );
 }
 
-// Componente principal de la pregunta de ordenamiento
 const Ordering: React.FC<{
   question: OrderingQuestion;
   onAnswer: (answer: string[]) => void;
@@ -81,7 +80,7 @@ const Ordering: React.FC<{
   };
 
   return (
-    <div>
+    <div className="max-w-md mx-auto">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -97,7 +96,7 @@ const Ordering: React.FC<{
       </DndContext>
       <button
         onClick={() => onAnswer(items)}
-        className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+        className="w-full bg-secondary text-white font-bold py-4 px-6 rounded-lg text-lg hover:bg-green-600 transition-colors duration-200"
       >
         Confirmar Orden
       </button>

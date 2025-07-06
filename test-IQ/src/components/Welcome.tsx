@@ -2,7 +2,6 @@
 import React from "react";
 import { BrainCircuit } from "lucide-react";
 
-// Se añade la nueva propiedad 'totalQuestions' a la interfaz.
 interface WelcomeProps {
   onStart: () => void;
   totalQuestions: number;
@@ -10,22 +9,22 @@ interface WelcomeProps {
 
 const Welcome: React.FC<WelcomeProps> = ({ onStart, totalQuestions }) => {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-8 text-center transition-all duration-500 hover:shadow-2xl">
+    <div className="bg-surface rounded-2xl p-8 text-center animate-fade-in">
       <div className="flex justify-center items-center mb-6">
-        <BrainCircuit className="h-16 w-16 text-indigo-500" />
+        <BrainCircuit className="h-20 w-20 text-primary" />
       </div>
-      <h1 className="text-4xl font-bold text-gray-800 mb-4">
+      <h1 className="text-5xl font-display font-bold text-textPrimary mb-4">
         Bienvenido al Test de CI
       </h1>
-      <p className="text-gray-600 max-w-xl mx-auto mb-8">
+      <p className="text-textSecondary text-lg max-w-xl mx-auto mb-8">
         Pon a prueba tu agilidad mental, razonamiento lógico y habilidades para
         resolver problemas. Este test consta de{" "}
-        <strong>{totalQuestions} preguntas</strong> seleccionadas al azar.
-        ¡Mucha suerte!
+        <strong>{totalQuestions} preguntas</strong> seleccionadas para
+        desafiarte. ¡Mucha suerte!
       </p>
       <button
         onClick={onStart}
-        className="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transform hover:-translate-y-1 transition-all duration-300 ease-in-out"
+        className="bg-primary text-white font-bold py-4 px-10 rounded-full text-xl shadow-lg hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-primary/50 transform hover:-translate-y-1 transition-all duration-300 ease-in-out"
       >
         Comenzar Test
       </button>

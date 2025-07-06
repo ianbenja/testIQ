@@ -1,19 +1,16 @@
 // src/App.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { questions as allQuestions } from "./questions";
 import type { AnswerResult, AnyQuestion } from "./types";
 import Welcome from "./components/Welcome";
 import QuestionDisplay from "./components/QuestionDisplay";
 import Results from "./components/Results";
 import ProgressBar from "./components/ProgressBar";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 const TOTAL_QUESTIONS = 20;
 
-/**
- * Selecciona un subconjunto de preguntas de forma aleatoria y balanceada.
- * @param allQuestions - El banco completo de preguntas.
- * @returns Un array de 20 preguntas seleccionadas.
- */
 const selectQuestions = (allQuestions: AnyQuestion[]): AnyQuestion[] => {
   const easy = allQuestions.filter((q) => q.difficulty <= 4);
   const medium = allQuestions.filter(
@@ -23,9 +20,9 @@ const selectQuestions = (allQuestions: AnyQuestion[]): AnyQuestion[] => {
 
   const shuffle = (arr: AnyQuestion[]) => arr.sort(() => 0.5 - Math.random());
 
-  const selectedEasy = shuffle(easy).slice(0, 6); // 6 preguntas fáciles
-  const selectedMedium = shuffle(medium).slice(0, 8); // 8 preguntas medias
-  const selectedHard = shuffle(hard).slice(0, 6); // 6 preguntas difíciles
+  const selectedEasy = shuffle(easy).slice(0, 6);
+  const selectedMedium = shuffle(medium).slice(0, 8);
+  const selectedHard = shuffle(hard).slice(0, 6);
 
   return shuffle([...selectedEasy, ...selectedMedium, ...selectedHard]);
 };
@@ -39,15 +36,20 @@ export default function App() {
   const [answers, setAnswers] = useState<AnswerResult[]>([]);
   const [startTime, setStartTime] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
+  const [isFadingOut, setIsFadingOut] = useState(false);
 
   const handleStart = () => {
-    const selected = selectQuestions(allQuestions);
-    setTestQuestions(selected);
-    setAnswers([]);
-    setCurrentQuestionIndex(0);
-    setStartTime(Date.now());
-    setTotalTime(0);
-    setGameState("playing");
+    setIsFadingOut(true);
+    setTimeout(() => {
+      const selected = selectQuestions(allQuestions);
+      setTestQuestions(selected);
+      setAnswers([]);
+      setCurrentQuestionIndex(0);
+      setStartTime(Date.now());
+      setTotalTime(0);
+      setGameState("playing");
+      setIsFadingOut(false);
+    }, 300);
   };
 
   const handleAnswer = (userAnswer: string | string[]) => {
@@ -76,16 +78,24 @@ export default function App() {
       },
     ]);
 
-    if (currentQuestionIndex < testQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      setTotalTime(Date.now() - startTime);
-      setGameState("results");
-    }
+    setIsFadingOut(true);
+    setTimeout(() => {
+      if (currentQuestionIndex < testQuestions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      } else {
+        setTotalTime(Date.now() - startTime);
+        setGameState("results");
+      }
+      setIsFadingOut(false);
+    }, 300);
   };
 
   const handleRestart = () => {
-    setGameState("welcome");
+    setIsFadingOut(true);
+    setTimeout(() => {
+      setGameState("welcome");
+      setIsFadingOut(false);
+    }, 300);
   };
 
   const renderContent = () => {
@@ -99,6 +109,7 @@ export default function App() {
               startTime={startTime}
             />
             <QuestionDisplay
+              key={currentQuestionIndex}
               question={testQuestions[currentQuestionIndex]}
               onAnswer={handleAnswer}
             />
@@ -122,10 +133,18 @@ export default function App() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4 font-sans">
-      <main className="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-10">
-        {renderContent()}
+    <div className="bg-background min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow flex items-center justify-center p-4">
+        <div
+          className={`w-full max-w-4xl mx-auto bg-surface rounded-2xl shadow-lg p-6 md:p-10 transition-opacity duration-300 ${
+            isFadingOut ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          {renderContent()}
+        </div>
       </main>
+      <Footer />
     </div>
   );
 }
